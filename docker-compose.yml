@@ -1,18 +1,44 @@
 services:
+
+  configserver:
+    image: enzogavini/configserver:latest
+    ports:
+      - "8071:8071"
+    mem_limit: 700m
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:8071/accounts/prod || exit 1" ]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
   accounts:
     image: enzogavini/accounts:1.0.0
     ports:
       - "8080:8080"
     mem_limit: 700m
+    depends_on:
+      configserver:
+        condition: service_healthy
+        restart: true
 
   cards:
     image: enzogavini/cards:1.0.0
     ports:
       - "9000:9000"
     mem_limit: 700m
+    depends_on:
+      configserver:
+        condition: service_healthy
+        restart: true
 
   loans:
     image: enzogavini/loans:1.0.0
     ports:
       - "8090:8090"
     mem_limit: 700m
+    depends_on:
+      configserver:
+        condition: service_healthy
+        restart: true
+
