@@ -4,10 +4,9 @@ import enzo_gavini.cards.model.Cards;
 import enzo_gavini.cards.model.Customer;
 import enzo_gavini.cards.repository.CardsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.smartcardio.Card;
 import java.util.List;
 
 

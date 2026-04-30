@@ -1,12 +1,30 @@
 services:
 
+  consul:
+    image: hashicorp/consul:1.21.3
+    container_name: consul
+    mem_limit: 700m
+    ports:
+      - "8500:8500"
+    command: consul agent -server -ui -node=server-1 -bootstrap-expect=1 -client=0.0.0.0 -data-dir=/consul/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8500/v1/status/leader"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   configserver:
     image: enzogavini/configserver:latest
+    container_name: configserver
     ports:
       - "8071:8071"
     mem_limit: 700m
+    depends_on:
+      consul:
+        condition: service_healthy
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:8071/accounts/prod || exit 1" ]
+      test: ["CMD-SHELL", "curl -f http://localhost:8071/accounts/prod || exit 1"]
       interval: 10s
       retries: 5
       start_period: 30s
@@ -14,31 +32,36 @@ services:
 
   accounts:
     image: enzogavini/accounts:1.0.0
+    container_name: accounts
     ports:
       - "8080:8080"
     mem_limit: 700m
     depends_on:
       configserver:
         condition: service_healthy
-        restart: true
+      consul:
+        condition: service_healthy
 
   cards:
     image: enzogavini/cards:1.0.0
+    container_name: cards
     ports:
       - "9000:9000"
     mem_limit: 700m
     depends_on:
       configserver:
         condition: service_healthy
-        restart: true
+      consul:
+        condition: service_healthy
 
   loans:
     image: enzogavini/loans:1.0.0
+    container_name: loans
     ports:
       - "8090:8090"
     mem_limit: 700m
     depends_on:
       configserver:
         condition: service_healthy
-        restart: true
-
+      consul:
+        condition: service_healthy
